@@ -4,14 +4,17 @@ constexpr unsigned int SIZE_CELL = 20;
 constexpr float SLEEP_SNAKE = 100.0f;
 
 #include <SFML/Graphics.hpp>
+#include <fstream>
 #include <vector>
 #include <string>
+#include <iostream>
 
 constexpr sf::Color COLOR_BACKGROUND = sf::Color(175, 204, 96, 255);
 constexpr sf::Color COLOR_SNAKE = sf::Color(42, 52, 25);
 constexpr sf::Color COLOR_APPLE = sf::Color(42, 62, 25);
 
 const std::string PATH_TO_FONT = "./font.ttf";
+const std::string PATH_TO_RECORD = "./res.bin";
 
 const std::vector<sf::Keyboard::Key> KEY_UP { sf::Keyboard::Key::W, sf::Keyboard::Key::Up };
 const std::vector<sf::Keyboard::Key> KEY_DOWN { sf::Keyboard::Key::S, sf::Keyboard::Key::Down };
@@ -166,7 +169,7 @@ public:
             this->x = rand() % COLUMNS + 2;
             this->y = rand() % ROWS + 2;
 
-            for (unsigned int index = 0; index < snake.getCoordX().size(); index++)
+            for (unsigned int index = 0; index < snake.getCoordX().size() + 1; index++)
             {
                 if (this->x != snake.getCoordX()[index] && this->y != snake.getCoordY()[index])
                 {
@@ -205,6 +208,11 @@ int main()
     sf::RenderWindow window(sf::VideoMode(sizeWindow), "Snake Game");
     sf::Font font = sf::Font(PATH_TO_FONT);
 
+    int record = 0;
+    std::ifstream file = std::ifstream(PATH_TO_RECORD, std::ios_base::binary);
+    file.read((char*)&record, 1);
+    file.close();
+
     while (circleProgram)
     {
         sf::RectangleShape boarderRect = sf::RectangleShape({ COLUMNS * SIZE_CELL, ROWS * SIZE_CELL });
@@ -217,7 +225,6 @@ int main()
         Apple apple = Apple();
 
         sf::Text scoreInput = sf::Text(font, "Score: ", 20);
-        scoreInput.setPosition({SIZE_CELL * 2, 0});
         scoreInput.setFillColor(COLOR_SNAKE);
 
         while (isRunningGame)
@@ -233,14 +240,29 @@ int main()
             window.draw(boarderRect);
             snake.draw(window);
             apple.draw(window);
+
+            scoreInput.setPosition({ SIZE_CELL * 2, 0 });
             scoreInput.setString("Score: " + std::to_string(Score));
             window.draw(scoreInput);
+
+            scoreInput.setPosition({ SIZE_CELL * 8, 0 });
+            scoreInput.setString("Record: " + std::to_string(record));
+            window.draw(scoreInput);
+
             window.display();
 
             if (!window.isOpen())
             {
                 circleProgram = false;
                 isRunningGame = false;
+            }
+
+            if (Score > record)
+            {
+                record = Score;
+                std::ofstream f = std::ofstream(PATH_TO_RECORD, std::ios_base::binary);
+                f.write((char*)&record, 4);
+                f.close();
             }
         }
         Score = 0;
