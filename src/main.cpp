@@ -169,7 +169,7 @@ public:
             this->x = rand() % COLUMNS + 2;
             this->y = rand() % ROWS + 2;
 
-            for (unsigned int index = 0; index < snake.getCoordX().size() + 1; index++)
+            for (unsigned int index = 0; index < snake.getCoordX().size(); index++)
             {
                 if (this->x != snake.getCoordX()[index] && this->y != snake.getCoordY()[index])
                 {
